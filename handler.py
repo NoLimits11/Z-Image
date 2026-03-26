@@ -1,5 +1,4 @@
 import runpod
-from runpod.serverless.utils import rp_upload
 import os
 import websocket
 import base64
@@ -8,9 +7,7 @@ import uuid
 import logging
 import urllib.request
 import urllib.parse
-import binascii
 import time
-from PIL import Image
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -18,21 +15,6 @@ logger = logging.getLogger(__name__)
 server_address = os.getenv('SERVER_ADDRESS', '127.0.0.1')
 client_id = str(uuid.uuid4())
 
-def save_data_if_base64(data_input, temp_dir, output_filename):
-    if not isinstance(data_input, str):
-        return data_input
-    try:
-        decoded_data = base64.b64decode(data_input)
-        os.makedirs(temp_dir, exist_ok=True)
-        file_path = os.path.abspath(os.path.join(temp_dir, output_filename))
-        with open(file_path, 'wb') as f:
-            f.write(decoded_data)
-        logger.info(f"✅ Base64 saved to '{file_path}'")
-        return file_path
-    except (binascii.Error, ValueError):
-        logger.info(f"➡️ '{data_input}' treated as file path.")
-        return data_input
-    
 def queue_prompt(prompt):
     url = f"http://{server_address}:8188/prompt"
     p = {"prompt": prompt, "client_id": client_id}
@@ -88,61 +70,41 @@ def handler(job):
     job_input = job.get("input", {})
     logger.info(f"Received job input: {job_input}")
 
-    # Load single universal workflow
     workflow_file = "/workflow.json"
-    logger.info(f"Loading workflow: {workflow_file}")
     prompt = load_workflow(workflow_file)
 
-    # 1. Handle Input Image (Your workflow requires LoadImage node 117)
-    # If API provides input_image, use it. Otherwise create a blank placeholder using width/height
-    input_image_data = job_input.get("input_image")
-    input_dir = "/ComfyUI/input"
-    os.makedirs(input_dir, exist_ok=True)
-    
-    if input_image_data:
-        save_data_if_base64(input_image_data, input_dir, "api_input.png")
-        prompt["117"]["inputs"]["image"] = "api_input.png"
-    else:
-        # Fallback for old API requests (Creates a solid black image so workflow doesn't crash)
-        w = job_input.get("width", 1024)
-        h = job_input.get("height", 1024)
-        blank_image = Image.new('RGB', (w, h), color='black')
-        blank_image.save(os.path.join(input_dir, "api_input.png"))
-        prompt["117"]["inputs"]["image"] = "api_input.png"
-
-    # 2. Map standard settings to new Node IDs
+    # 1. Map standard settings to the specific Nodes
     if "prompt" in job_input:
-        prompt["75:74"]["inputs"]["text"] = job_input["prompt"]
+        prompt["6"]["inputs"]["text"] = job_input["prompt"]
     if "seed" in job_input:
-        prompt["75:73"]["inputs"]["noise_seed"] = job_input["seed"]
+        prompt["49"]["inputs"]["seed"] = job_input["seed"]
     if "guidance" in job_input:
-        prompt["75:63"]["inputs"]["cfg"] = job_input["guidance"]
+        prompt["51"]["inputs"]["guidance"] = job_input["guidance"]
+    if "width" in job_input:
+        prompt["56"]["inputs"]["width"] = job_input["width"]
+    if "height" in job_input:
+        prompt["56"]["inputs"]["height"] = job_input["height"]
     
-    # 3. Model Override
+    # 2. Model Override
     if "model" in job_input:
-        prompt["101"]["inputs"]["unet_name"] = job_input["model"]
+        prompt["38"]["inputs"]["unet_name"] = job_input["model"]
         logger.info(f"Model changed to: {job_input['model']}")
     
-    # 4. LoRA Dynamic toggling using Power Lora Loader (Node 111)
+    # 3. LoRA Dynamic toggling (Nodes 53, 54, and 57 are chained in this workflow)
     lora_list = job_input.get("lora", [])
+    lora_nodes = ["53", "54", "57"]
     
-    # First turn off all predefined LoRAs in the JSON
-    for i in range(1, 15):
-        lora_key = f"lora_{i}"
-        if lora_key in prompt["111"]["inputs"]:
-            prompt["111"]["inputs"][lora_key]["on"] = False
-            
-    # Then turn on the requested ones dynamically
+    # First, reset all 3 LoRAs in the chain to 0.0 strength so they do nothing by default
+    for node_id in lora_nodes:
+        prompt[node_id]["inputs"]["strength_model"] = 0.0
+        
+    # Then apply the requested LoRAs (up to 3)
     for i, (lora_name, weight) in enumerate(lora_list):
-        slot = i + 1
-        lora_key = f"lora_{slot}"
-        if lora_key not in prompt["111"]["inputs"]:
-            prompt["111"]["inputs"][lora_key] = {}
-            
-        prompt["111"]["inputs"][lora_key]["on"] = True
-        prompt["111"]["inputs"][lora_key]["lora"] = lora_name
-        prompt["111"]["inputs"][lora_key]["strength"] = weight
-        logger.info(f"LoRA {slot} applied: {lora_name} with weight {weight}")
+        if i < len(lora_nodes):
+            node_id = lora_nodes[i]
+            prompt[node_id]["inputs"]["lora_name"] = lora_name
+            prompt[node_id]["inputs"]["strength_model"] = weight
+            logger.info(f"LoRA {i+1} applied: {lora_name} with weight {weight}")
 
     # Connect and Execute
     ws_url = f"ws://{server_address}:8188/ws?clientId={client_id}"
@@ -173,6 +135,7 @@ def handler(job):
     if not images:
         return {"error": "Failed to generate image."}
     
+    # Return output from SaveImage Node (Node 9)
     for node_id in images:
         if images[node_id]:
             return {"image": images[node_id][0]}
