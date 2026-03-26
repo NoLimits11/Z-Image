@@ -1,185 +1,109 @@
 {
-  "100": {
+  "6": {
     "inputs": {
-      "upscale_method": "bicubic",
-      "megapixels": 1,
-      "resolution_steps": 1,
-      "image": ["117", 0]
+      "text": "",
+      "clip": ["55", 0]
     },
-    "class_type": "ImageScaleToTotalPixels"
+    "class_type": "CLIPTextEncode"
   },
-  "101": {
+  "8": {
+    "inputs": {
+      "samples": ["49", 0],
+      "vae": ["40", 0]
+    },
+    "class_type": "VAEDecode"
+  },
+  "9": {
+    "inputs": {
+      "filename_prefix": "TryNoLimits",
+      "images": ["8", 0]
+    },
+    "class_type": "SaveImage"
+  },
+  "33": {
+    "inputs": {
+      "text": "Selfie,puffy lips, oversized lips, injected lips, lip filler, duckface, pout, overdrawn lips, swollen lips, botox, plastic, doll-like, seductive expression,heavy makeup, cakey foundation, bright lipstick, eyeshadow, eyeliner, fake eyelashes, mascara, contouring, blush, drag makeup, clown, plastic skin, botox, fillers, duck face, ugly, asymmetrical face, cross-eyed, lazy eye, squinting, bad teeth, masculine features, man, beard, stubble, bad anatomy, deformed, extra limbs, missing limbs, mutated hands, bad proportions, long neck, 3d render, cgi, anime, cartoon, illustration, painting, watermark, text.\n",
+      "clip": ["55", 0]
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "38": {
     "inputs": {
       "unet_name": "fp8_e4m3fnZIMAGE.safetensors",
       "weight_dtype": "default"
     },
     "class_type": "UNETLoader"
   },
-  "102": {
-    "inputs": {
-      "clip_name": "Qwen3-4B-abliterated-iq4_nl.gguf",
-      "type": "flux2",
-      "device": "default"
-    },
-    "class_type": "CLIPLoader"
-  },
-  "103": {
+  "40": {
     "inputs": {
       "vae_name": "ae.safetensors"
     },
     "class_type": "VAELoader"
   },
-  "104": {
+  "43": {
     "inputs": {
-      "pixels": ["106", 0],
-      "vae": ["103", 0]
+      "conditioning": ["33", 0]
     },
-    "class_type": "VAEEncode"
+    "class_type": "ConditioningZeroOut"
   },
-  "106": {
+  "49": {
     "inputs": {
-      "upscale_method": "bicubic",
-      "megapixels": 1,
-      "resolution_steps": 1,
-      "image": ["117", 0]
-    },
-    "class_type": "ImageScaleToTotalPixels"
-  },
-  "110": {
-    "inputs": {
-      "filename_prefix": "Trynolimits",
-      "images": ["75:65", 0]
-    },
-    "class_type": "SaveImage"
-  },
-  "111": {
-    "inputs": {
-      "PowerLoraLoaderHeaderWidget": {
-        "type": "PowerLoraLoaderHeaderWidget"
-      },
-      "lora_1": {"on": false, "lora": "klein_snofs_v1_1.safetensors", "strength": 1},
-      "lora_2": {"on": false, "lora": "Realism_Engine_Klein_V2.safetensors", "strength": 1},
-      "lora_3": {"on": false, "lora": "KLEIN-Unchained-V1.safetensors", "strength": 1},
-      "lora_4": {"on": false, "lora": "pussydiffusion-f2-klein-9b_v2.safetensors", "strength": 0.3},
-      "lora_5": {"on": false, "lora": "nipplediffusion-f2-klein-9b_v2.safetensors", "strength": 0.4},
-      "lora_6": {"on": false, "lora": "pussymix_datass.safetensors", "strength": 0.2},
-      "lora_7": {"on": false, "lora": "nicegirls_flux_klein9b.safetensors", "strength": 0.5},
-      "lora_8": {"on": false, "lora": "klein_slider_anatomy.safetensors", "strength": 3},
-      "lora_9": {"on": false, "lora": "realeng.safetensors", "strength": 0.4333},
-      "lora_10": {"on": false, "lora": "snof.safetensors", "strength": 1},
-      "lora_11": {"on": false, "lora": "snof2.safetensors", "strength": 1},
-      "lora_12": {"on": false, "lora": "RealismSlider.safetensors", "strength": 3.346},
-      "lora_13": {"on": false, "lora": "lenovo.safetensors", "strength": 0.8},
-      "lora_14": {"on": false, "lora": "instagrami.safetensors", "strength": 0.8},
-      "model": ["101", 0]
-    },
-    "class_type": "Power Lora Loader (rgthree)"
-  },
-  "112": {
-    "inputs": {
-      "expand": 0,
-      "tapered_corners": true
-    },
-    "class_type": "GrowMask"
-  },
-  "117": {
-    "inputs": {
-      "image": "download (3).jfif"
-    },
-    "class_type": "LoadImage"
-  },
-  "75:61": {
-    "inputs": {
-      "sampler_name": "euler"
-    },
-    "class_type": "KSamplerSelect"
-  },
-  "75:73": {
-    "inputs": {
-      "noise_seed": 16375407081247
-    },
-    "class_type": "RandomNoise"
-  },
-  "75:74": {
-    "inputs": {
-      "text": "Raw smartphone photography, candid aesthetic,she is bent over picking a dumbbell up from the floor showcasing her buttocks covered by black shorts. she is positioned away from the lens,looking back at the lens.",
-      "clip": ["102", 0]
-    },
-    "class_type": "CLIPTextEncode"
-  },
-  "75:67": {
-    "inputs": {
-      "text": "ugly, blurry, worst quality, low resolution",
-      "clip": ["102", 0]
-    },
-    "class_type": "CLIPTextEncode"
-  },
-  "75:82": {
-    "inputs": {
-      "image": ["100", 0]
-    },
-    "class_type": "GetImageSize"
-  },
-  "75:79:78": {
-    "inputs": {
-      "pixels": ["100", 0],
-      "vae": ["103", 0]
-    },
-    "class_type": "VAEEncode"
-  },
-  "75:62": {
-    "inputs": {
+      "seed": 166845068099049,
       "steps": 12,
-      "width": ["75:82", 0],
-      "height": ["75:82", 1]
-    },
-    "class_type": "Flux2Scheduler"
-  },
-  "75:79:76": {
-    "inputs": {
-      "conditioning": ["75:67", 0],
-      "latent": ["75:79:78", 0]
-    },
-    "class_type": "ReferenceLatent"
-  },
-  "75:79:77": {
-    "inputs": {
-      "conditioning": ["75:74", 0],
-      "latent": ["75:79:78", 0]
-    },
-    "class_type": "ReferenceLatent"
-  },
-  "75:83": {
-    "inputs": {
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "ddim_uniform",
       "denoise": 1,
-      "sigmas": ["75:62", 0]
+      "positive": ["51", 0],
+      "negative": ["43", 0],
+      "latent_image": ["56", 0]
     },
-    "class_type": "SplitSigmasDenoise"
+    "class_type": "KSampler"
   },
-  "75:63": {
+  "51": {
     "inputs": {
-      "cfg": 2.5,
-      "model": ["111", 0],
-      "positive": ["75:79:77", 0],
-      "negative": ["75:79:76", 0]
+      "guidance": 3.5,
+      "conditioning": ["6", 0]
     },
-    "class_type": "CFGGuider"
+    "class_type": "FluxGuidance"
   },
-  "75:64": {
+  "53": {
     "inputs": {
-      "noise": ["75:73", 0],
-      "guider": ["75:63", 0],
-      "sampler": ["75:61", 0],
-      "sigmas": ["75:83", 1],
-      "latent_image": ["104", 0]
+      "lora_name": "SnapS.safetensors",
+      "strength_model": 0.6,
+      "model": ["38", 0]
     },
-    "class_type": "SamplerCustomAdvanced"
+    "class_type": "LoraLoaderModelOnly"
   },
-  "75:65": {
+  "54": {
     "inputs": {
-      "samples": ["75:64", 0],
-      "vae": ["103", 0]
+      "lora_name": "Airport.safetensors",
+      "strength_model": 0.6,
+      "model": ["53", 0]
     },
-    "class_type": "VAEDecode"
+    "class_type": "LoraLoaderModelOnly"
+  },
+  "55": {
+    "inputs": {
+      "clip_name": "Qwen3-4B-abliterated-iq4_nl.gguf",
+      "type": "lumina2"
+    },
+    "class_type": "CLIPLoaderGGUF"
+  },
+  "56": {
+    "inputs": {
+      "width": 1088,
+      "height": 1920,
+      "batch_size": 1
+    },
+    "class_type": "EmptySD3LatentImage"
+  },
+  "57": {
+    "inputs": {
+      "lora_name": "b4ddie.safetensors",
+      "strength_model": 0.17,
+      "model": ["54", 0]
+    },
+    "class_type": "LoraLoaderModelOnly"
   }
 }
