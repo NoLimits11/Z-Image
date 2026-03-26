@@ -1,4 +1,4 @@
-# Use specific version of nvidia cuda image
+# Use specific version of nvidia cuda imag
 FROM wlsdml1114/multitalk-base:1.4 as runtime
 
 RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
