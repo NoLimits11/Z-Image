@@ -1,14 +1,12 @@
 # Use specific version of nvidia cuda image
 FROM wlsdml1114/multitalk-base:1.4 as runtime
 
-# wget 설치 (URL 다운로드를 위해)
 RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
 
 RUN pip install -U "huggingface_hub[hf_transfer]"
-RUN pip install runpod websocket-client
+RUN pip install runpod websocket-client gguf pillow
 
 WORKDIR /
-
 
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git && \
     cd /ComfyUI && \
@@ -19,12 +17,19 @@ RUN cd /ComfyUI/custom_nodes && \
     cd ComfyUI-Manager && \
     pip install -r requirements.txt
 
-# wget을 사용하여 모델 다운로드 (인증 불필요)
-RUN wget https://huggingface.co/Comfy-Org/FLUX.1-Krea-dev_ComfyUI/resolve/main/split_files/diffusion_models/flux1-krea-dev_fp8_scaled.safetensors -O /ComfyUI/models/unet/flux1-krea-dev_fp8_scaled.safetensors
-RUN wget https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors -O /ComfyUI/models/clip/clip_l.safetensors
-RUN wget https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn_scaled.safetensors -O /ComfyUI/models/clip/t5xxl_fp8_e4m3fn_scaled.safetensors
-RUN wget https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors -O /ComfyUI/models/vae/ae.safetensors
+# Install rgthree-comfy (required for Power Lora Loader in your workflow)
+RUN cd /ComfyUI/custom_nodes && \
+    git clone https://github.com/rgthree/rgthree-comfy.git && \
+    cd rgthree-comfy && \
+    pip install -r requirements.txt || true
 
+# Download your required models into the proper folders
+RUN wget "https://civitai.com/api/download/models/2617751?token=d829c3792b5143809703a8d9bad0e8ec" -O /ComfyUI/models/loras/SnapS.safetensors
+RUN wget "https://civitai.com/api/download/models/2473179?token=d829c3792b5143809703a8d9bad0e8ec" -O /ComfyUI/models/loras/b4ddie.safetensors
+RUN wget "https://civitai.com/api/download/models/2733536?token=d829c3792b5143809703a8d9bad0e8ec" -O /ComfyUI/models/loras/Airport.safetensors
+RUN wget "https://huggingface.co/lodestones/Chroma/resolve/main/vae/diffusion_pytorch_model.safetensors" -O /ComfyUI/models/vae/ae.safetensors
+RUN wget "https://civitai.com/api/download/models/2445746?token=d829c3792b5143809703a8d9bad0e8ec" -O /ComfyUI/models/diffusion_models/fp8_e4m3fnZIMAGE.safetensors
+RUN wget "https://huggingface.co/Mungert/Qwen3-4B-abliterated-GGUF/resolve/main/Qwen3-4B-abliterated-iq4_nl.gguf" -O /ComfyUI/models/clip/Qwen3-4B-abliterated-iq4_nl.gguf
 
 COPY . .
 COPY extra_model_paths.yaml /ComfyUI/extra_model_paths.yaml
